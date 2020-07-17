@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Certificado="" CondicionesDePago="30 dias netos" Fecha="2020-06-09T03:46:57" Folio="970000125" FormaPago="99" LugarExpedicion="65500" MetodoPago="PPD" Moneda="USD" NoCertificado="" Sello="" Serie="CD" SubTotal="253.8" TipoCambio="18.870000" TipoDeComprobante="I" Total="253.8" Version="3.3" xsi:schemaLocation="http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv33.xsd">
+	<cfdi:Emisor Nombre="Anstee Coil Technology SA de CV" RegimenFiscal="601" Rfc="ACT180306KT8"/>
+	<cfdi:Receptor Nombre="McCrometer Hemet" NumRegIdTrib="330695522" ResidenciaFiscal="USA" Rfc="XEXX010101000" UsoCFDI="P01"/>
+	<cfdi:Conceptos>
+		<cfdi:Concepto Cantidad="10.000000" ClaveProdServ="39121010" ClaveUnidad="H87" Descripcion="12&quot; coil to drawing 21795" Importe="253.8" NoIdentificacion="CM15-21795-12" Unidad="pcs" ValorUnitario="25.38">
+			<cfdi:Impuestos>
+				<cfdi:Traslados>
+					<cfdi:Traslado Base="253.8" Importe="0" Impuesto="002" TasaOCuota="0.000000" TipoFactor="Tasa"/>
+				</cfdi:Traslados>
+				
+			</cfdi:Impuestos>
+		</cfdi:Concepto>
+	</cfdi:Conceptos>
+	<cfdi:Impuestos TotalImpuestosTrasladados="0">
+		
+		<cfdi:Traslados>
+			<cfdi:Traslado Importe="0" Impuesto="002" TasaOCuota="0.000000" TipoFactor="Tasa"/>
+		</cfdi:Traslados>
+	</cfdi:Impuestos>
+	<cfdi:Complemento xmlns:cce11="http://www.sat.gob.mx/cfd/3">
+		<cce11:ComercioExterior CertificadoOrigen="0" ClaveDePedimento="A1" Incoterm="EXW" Subdivision="0" TipoOperacion="2" Version="1.1">
+			<cce11:Emisor>
+				<cce11:Domicilio Calle="Tierra" CodigoPostal="65500" Colonia="Fracc Industrial Dinamo del Norte" Estado="Nuevo Leon" Municipio="Salinas Victoria" NumeroExterior="119" Pais="MEXICO"/>
+			</cce11:Emisor>
+			<cce11:Receptor>
+				<cce11:Domicilio Calle="Stetson Ave" CodigoPostal="92545" Colonia="Hemet" Estado="California" Municipio="CA 92545-7763" NumeroExterior="3255" Pais="UNITED STATES"/>
+			</cce11:Receptor>
+			<cce11:Mercancias>
+				<cce11:Mercancia CantidadAduana="10.00" FraccionArancelaria="85045099" NoIdentificacion="CM15-21795-12" UnidadAduana="06"/>
+				<cce11:Mercancia CantidadAduana="10.00" FraccionArancelaria="85045099" NoIdentificacion="CM15-21795-12" UnidadAduana="06"/>
+			</cce11:Mercancias>
+		</cce11:ComercioExterior>
+	</cfdi:Complemento>
+	
+</cfdi:Comprobante>
