@@ -6,23 +6,15 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import javax.xml.parsers.DocumentBuilder;  
 import org.w3c.dom.Document;  
-
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import java.io.File;
-import java.io.FilenameFilter;  
-
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import java.io.FilenameFilter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class ConvertXml {
 
@@ -70,11 +62,25 @@ public class ConvertXml {
 				
 				modificarMercanciaNodo(doc);
 				
+				actualizarHora(doc);
+				actualizarCfdiRelacionado(doc);
+				
+				actualizarUUID(doc);
+				
+				actualizarNodoPago(doc);
+				
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
 		        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "5");
+		        
+		        Transformer tf = TransformerFactory.newInstance().newTransformer();
+		        tf.setOutputProperty(OutputKeys.INDENT, "yes");
+		        tf.setOutputProperty(OutputKeys.METHOD, "xml");
+		        tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+		        
 		        DOMSource source = new DOMSource(doc);
+		        
 	
 		        File xmlOficial = new File(fileToConvert.getName().substring(0,fileToConvert.getName().length()-4) + "_Oficial" + fileToConvert.getName().substring(fileToConvert.getName().length()-4));	        
 		        if (xmlOficial.exists()) {
@@ -166,10 +172,12 @@ public class ConvertXml {
 				auxComprobanteTipoCambio = eComprobante.getAttribute("TipoCambio");
 			}
 			
+			Double dAux = Double.parseDouble(auxComprobanteTotal);
+			
 			
 			Element eComercioExterior = (Element)comercioExteriorNode.item(0);
 			eComercioExterior.setAttribute("TipoCambioUSD", auxComprobanteTipoCambio);
-			eComercioExterior.setAttribute("TotalUSD", auxComprobanteTotal);
+			eComercioExterior.setAttribute("TotalUSD",  String.format("%.2f", dAux));
 		}
 	}
 	
@@ -186,7 +194,6 @@ public class ConvertXml {
 				if(nodoConceptoList.item(i).getNodeType() == 1) {
 					
 					Element eNodoConcepto = (Element)nodoConceptoList.item(i);
-					System.out.println("Id Nodo Concepto" + eNodoConcepto.getAttribute("NoIdentificacion"));
 					conceptoNoIdentificacion = eNodoConcepto.getAttribute("NoIdentificacion");
 					conceptoImporte = eNodoConcepto.getAttribute("Importe");
 					conceptoValorUnitario = eNodoConcepto.getAttribute("ValorUnitario");
@@ -206,11 +213,67 @@ public class ConvertXml {
 			for(int i = 0; i < nodoMercanciaList.getLength(); i++) {
 				if(nodoMercanciaList.item(i).getNodeType() == 1) {
 					Element eNodoMercancia = (Element)nodoMercanciaList.item(i);
-					System.out.println(eNodoMercancia.getAttribute("NoIdentificacion") + " es igual a " + noIdentificacion);
 					if(eNodoMercancia.getAttribute("NoIdentificacion").equals(noIdentificacion)) {
 						eNodoMercancia.setAttribute("ValorDolares", importe);
 						eNodoMercancia.setAttribute("ValorUnitarioAduana", valorUnitario);
 					}	
+				}
+			}
+		}
+	}
+	
+	public static void actualizarHora(Document doc) {
+		NodeList comprobanteNode = doc.getElementsByTagName("cfdi:Comprobante");
+		Element eComprobante = (Element)comprobanteNode.item(0);
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");  
+		LocalDateTime now = LocalDateTime.now();
+		eComprobante.setAttribute("Fecha", now.truncatedTo(ChronoUnit.SECONDS).format(dtf));
+	}
+	
+	public static void actualizarCfdiRelacionado(Document doc) {
+		NodeList relacionadosNode = doc.getElementsByTagName("cfdi:CfdiRelacionados");
+		if(relacionadosNode.getLength() > 0) {
+			Element eNodoRelacionados = (Element)relacionadosNode.item(0);
+			if(eNodoRelacionados.getAttribute("TipoRelacion").isEmpty()) {
+				eNodoRelacionados.setAttribute("TipoRelacion", "01");
+			}
+		}
+	}	
+	
+	public static void actualizarUUID(Document doc) {
+		NodeList relacionadosNode = doc.getElementsByTagName("cfdi:CfdiRelacionados");
+		String auxUUID = null;
+		
+		if(relacionadosNode.getLength() > 0) {
+			NodeList eNodoRelacionadoList = relacionadosNode.item(0).getChildNodes();
+			for(int i = 0; i < eNodoRelacionadoList.getLength(); i++) {
+				if(eNodoRelacionadoList.item(i).getNodeType() == 1) {
+					Element eNodoRelacionado = (Element)eNodoRelacionadoList.item(i);
+					auxUUID = eNodoRelacionado.getElementsByTagName("UUID").item(0).getChildNodes().item(0).getNodeValue();
+					eNodoRelacionado.setAttribute("UUID",auxUUID);
+					eNodoRelacionado.removeChild(eNodoRelacionado.getElementsByTagName("UUID").item(0));
+						
+				}
+			}
+		}
+	}
+	
+	public static void actualizarNodoPago(Document doc) {
+		NodeList pagoNode = doc.getElementsByTagName("pago10:Pago");
+		
+		if(pagoNode.getLength() > 0) {
+			Element eNodoPago = (Element)pagoNode.item(0);
+			eNodoPago.removeAttribute("CtaOrdenante");
+			eNodoPago.removeAttribute("RfcEmisorCtaBen");
+			eNodoPago.removeAttribute("CtaBeneficiario");
+			eNodoPago.removeAttribute("RfcEmisorCtaOrd");
+			
+			NodeList doctoRelacionadoList = pagoNode.item(0).getChildNodes();
+			
+			for(int i = 0; i < doctoRelacionadoList.getLength(); i++) {
+				if(doctoRelacionadoList.item(i).getNodeType() == 1) {
+					Element eDoctoRelacionado = (Element)doctoRelacionadoList.item(i);
+					eDoctoRelacionado.removeAttribute("TipoCambioDR");	
 				}
 			}
 		}
