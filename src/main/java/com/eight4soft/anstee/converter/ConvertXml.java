@@ -9,6 +9,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.parsers.DocumentBuilder;  
 import org.w3c.dom.Document;  
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -43,6 +45,7 @@ public class ConvertXml {
 			
 				//an instance of factory that gives a document builder  
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  
+				
 				//an instance of builder to parse the specified xml file  
 				DocumentBuilder db = dbf.newDocumentBuilder();  
 				Document doc = db.parse(fileToConvert);  			
@@ -68,6 +71,8 @@ public class ConvertXml {
 				actualizarUUID(doc);
 				
 				actualizarNodoPago(doc);
+				
+				addComplementoNamspace(doc);
 				
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -276,6 +281,17 @@ public class ConvertXml {
 					eDoctoRelacionado.removeAttribute("TipoCambioDR");	
 				}
 			}
+		}
+	}
+	
+	public static void addComplementoNamspace(Document doc) {
+		
+		NodeList comercioExteriorNode = doc.getElementsByTagName("cfdi:Complemento");
+		if(comercioExteriorNode.getLength() > 0) {
+			Element comercioExteriorElement  = (Element)comercioExteriorNode.item(0);
+			
+			comercioExteriorElement.removeAttribute("xmlns:cce11");
+			comercioExteriorElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:cce11", "http://www.sat.gob.mx/ComercioExterior11");
 		}
 	}
 }  
